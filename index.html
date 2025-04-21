@@ -1,728 +1,80 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberPong - 2v2 Futuristic Pong with Explosions</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
-        
-        body {
-            font-family: 'Orbitron', sans-serif;
-            background-color: #0a0a1a;
-            overflow: hidden;
-            color: #00f3ff;
-            text-shadow: 0 0 10px #00f3ff;
-        }
-        
-        #gameContainer {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-        }
-        
-        .paddle {
-            position: absolute;
-            background: linear-gradient(180deg, #00f3ff 0%, #0066ff 100%);
-            border-radius: 10px;
-            box-shadow: 0 0 15px #00f3ff;
-            transition: transform 0.1s;
-        }
-        
-        .paddle.horizontal {
-            background: linear-gradient(90deg, #ff00ff 0%, #ff0066 100%);
-        }
-        
-        #ball {
-            position: absolute;
-            background: radial-gradient(circle, #ffffff 0%, #ff00ff 100%);
-            border-radius: 50%;
-            box-shadow: 0 0 20px #ff00ff;
-            z-index: 5;
-        }
-        
-        .particle {
-            position: absolute;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 10;
-        }
-        
-        #scoreBoard {
-            position: absolute;
-            top: 20px;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            gap: 100px;
-            font-size: 3rem;
-            font-weight: bold;
-        }
-        
-        .team-scores {
-            display: flex;
-            gap: 50px;
-        }
-        
-        #pauseScreen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 20, 0.8);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-        
-        #startScreen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 20, 0.9);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 200;
-        }
-        
-        .neon-button {
-            background: transparent;
-            color: #00f3ff;
-            border: 2px solid #00f3ff;
-            padding: 12px 24px;
-            font-size: 1.5rem;
-            margin: 10px;
-            cursor: pointer;
-            font-family: 'Orbitron', sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            transition: all 0.3s;
-            box-shadow: 0 0 15px #00f3ff;
-        }
-        
-        .neon-button:hover {
-            background: #00f3ff;
-            color: #0a0a1a;
-            box-shadow: 0 0 30px #00f3ff;
-        }
-        
-        h1, h2 {
-            text-align: center;
-            margin-bottom: 30px;
-            letter-spacing: 5px;
-        }
-        
-        h1 {
-            font-size: 4rem;
-            background: linear-gradient(90deg, #00f3ff, #ff00ff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        
-        #grid {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            opacity: 0.2;
-            background: 
-                linear-gradient(rgba(0, 243, 255, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 243, 255, 0.1) 1px, transparent 1px);
-            background-size: 30px 30px;
-        }
-        
-        .glow-effect {
-            animation: glow-pulse 1.5s infinite alternate;
-        }
-        
-        @keyframes glow-pulse {
-            0% {
-                filter: drop-shadow(0 0 5px #00f3ff);
-            }
-            100% {
-                filter: drop-shadow(0 0 20px #00f3ff);
-            }
-        }
-        
-        #console {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0, 0, 20, 0.7);
-            border: 1px solid #00f3ff;
-            padding: 10px 20px;
-            border-radius: 5px;
-            font-size: 0.9rem;
-            max-width: 600px;
-            text-align: center;
-            box-shadow: 0 0 10px #00f3ff;
-        }
-        
-        .team-display {
-            position: absolute;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 50px;
-            top: 100px;
-            font-size: 1.5rem;
-            color: #00f3ff;
-        }
-        
-        #center-line {
-            position: absolute;
-            left: 50%;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: linear-gradient(to bottom, 
-                transparent 0%, 
-                rgba(0, 243, 255, 0.3) 10%, 
-                rgba(0, 243, 255, 0.6) 50%, 
-                rgba(0, 243, 255, 0.3) 90%, 
-                transparent 100%);
-            z-index: -1;
-        }
-        
-        .vignette {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            box-shadow: inset 0 0 100px rgba(0, 0, 20, 0.9);
-            pointer-events: none;
-            z-index: 1;
-        }
-    </style>
+    <title>ATJ Services - Accueil</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="logo.png" type="image/png">
 </head>
-<body class="flex items-center justify-center">
-    <div id="grid"></div>
-    <div id="center-line"></div>
-    <div class="vignette"></div>
-    <div id="gameContainer">
-        <div class="team-display">
-            <div>TEAM BLUE</div>
-            <div>TEAM PINK</div>
+<body>
+    <header>
+        <div class="container">
+            <img src="logo.png" alt="Logo ATJ Services" class="logo">
+            <nav>
+                <ul>
+                    <li><a href="index.html" class="active">Accueil</a></li>
+                    <li><a href="role.html">Mon rôle</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
         </div>
-        
-        <div id="scoreBoard">
-            <div class="team-scores">
-                <div id="blueScore">0</div>
-                <div>:</div>
-                <div id="pinkScore">0</div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="hero">
+        <div class="hero-content">
+            <h1>Bienvenue chez <span>ATJ Services</span></h1>
+            <p>Votre expert en solutions informatiques et réseaux</p>
+            <button class="btn-scroll" onclick="scrollToSection('#contact')">Me contacter</button>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <h2>Nous Contacter</h2>
+        <div class="contact-grid">
+            <div class="contact-item">
+                <div class="icon-container">
+                    <img src="phone-icon.png" alt="Téléphone">
+                </div>
+                <p class="contact-title">Téléphone</p>
+                <p>03 59 61 77 22</p>
+            </div>
+            <div class="contact-item">
+                <div class="icon-container">
+                    <img src="email-icon.png" alt="Email">
+                </div>
+                <p class="contact-title">Email</p>
+                <p>contact@atjservices.pro</p>
+            </div>
+            <div class="contact-item">
+                <div class="icon-container">
+                    <img src="location-icon.png" alt="Adresse">
+                </div>
+                <p class="contact-title">Adresse</p>
+                <p>63 ter Rte nationale, 62860 Marquion</p>
             </div>
         </div>
-        
-        <div id="paddleLeft" class="paddle"></div>
-        <div id="paddleRight" class="paddle"></div>
-        <div id="paddleTop" class="paddle horizontal"></div>
-        <div id="paddleBottom" class="paddle horizontal"></div>
-        <div id="ball" class="glow-effect"></div>
-        
-        <div id="pauseScreen" style="display: none;">
-            <h1>CYBERPONG 2v2</h1>
-            <h2>GAME PAUSED</h2>
-            <button class="neon-button" onclick="resumeGame()">RESUME</button>
-            <button class="neon-button" onclick="resetGame()">RESTART</button>
-        </div>
-        
-        <div id="startScreen">
-            <h1>CYBERPONG 2v2</h1>
-            <h2>TEAM NEON BATTLE</h2>
-            <button class="neon-button glow-effect" onclick="startGame()">INITIATE GAME</button>
-            <div class="mt-10 text-center">
-                <p class="mb-2">TEAM BLUE CONTROLS:</p>
-                <p>LEFT PADDLE: W / S keys</p>
-                <p>RIGHT PADDLE: UP / DOWN arrows</p>
-                <p class="mt-4 mb-2">TEAM PINK CONTROLS:</p>
-                <p>TOP PADDLE: A / D keys</p>
-                <p>BOTTOM PADDLE: LEFT / RIGHT arrows</p>
-                <p class="mt-4">PAUSE: SPACE key</p>
-            </div>
-        </div>
-        
-        <div id="console">System initializing cybernetic pong interface...</div>
+    </section>
+    <!-- Carte Google Maps -->
+    <div class="map-container">
+        <iframe 
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2525.312745789463!2d3.059309116045605!3d50.31612387945464!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47c2c62c34f8b5ff%3A0x7e46c0b0c7f7a4ba!2s63%20Route%20nationale%2C%2062860%20Marquion%2C%20France!5e0!3m2!1sfr!2sfr!4v1682345678901!5m2!1sfr!2sfr" 
+            width="100%" 
+            height="300" 
+            style="border:0;" 
+            allowfullscreen="" 
+            loading="lazy" 
+            referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
     </div>
-    
-    <script>
-        // Game elements
-        const gameContainer = document.getElementById('gameContainer');
-        const paddleLeft = document.getElementById('paddleLeft');
-        const paddleRight = document.getElementById('paddleRight');
-        const paddleTop = document.getElementById('paddleTop');
-        const paddleBottom = document.getElementById('paddleBottom');
-        const ball = document.getElementById('ball');
-        const blueScore = document.getElementById('blueScore');
-        const pinkScore = document.getElementById('pinkScore');
-        const pauseScreen = document.getElementById('pauseScreen');
-        const startScreen = document.getElementById('startScreen');
-        const consoleElement = document.getElementById('console');
-        
-        // Game variables
-        let gameWidth, gameHeight;
-        let paddleWidth = 15, paddleHeight = 100;
-        let horizontalPaddleWidth = 100, horizontalPaddleHeight = 15;
-        let ballSize = 15;
-        let paddleSpeed = 8;
-        let ballSpeedX = 5, ballSpeedY = 5;
-        let maxAngle = 45 * (Math.PI / 180); // 45 degrees in radians
-        
-        // Scores
-        let scores = {
-            blue: 0,
-            pink: 0
-        };
-        
-        // Game state
-        let gameRunning = false;
-        let gamePaused = false;
-        let animateId;
-        
-        // Initialize game dimensions
-        function initGameDimensions() {
-            gameWidth = gameContainer.offsetWidth;
-            gameHeight = gameContainer.offsetHeight;
-            
-            // Position vertical paddles (Team Blue)
-            paddleLeft.style.width = `${paddleWidth}px`;
-            paddleLeft.style.height = `${paddleHeight}px`;
-            paddleLeft.style.left = '20px';
-            paddleLeft.style.top = `${(gameHeight - paddleHeight) / 2}px`;
-            
-            paddleRight.style.width = `${paddleWidth}px`;
-            paddleRight.style.height = `${paddleHeight}px`;
-            paddleRight.style.right = '20px';
-            paddleRight.style.left = 'auto';
-            paddleRight.style.top = `${(gameHeight - paddleHeight) / 2}px`;
-            
-            // Position horizontal paddles (Team Pink)
-            paddleTop.style.width = `${horizontalPaddleWidth}px`;
-            paddleTop.style.height = `${horizontalPaddleHeight}px`;
-            paddleTop.style.left = `${(gameWidth - horizontalPaddleWidth) / 2}px`;
-            paddleTop.style.top = '20px';
-            
-            paddleBottom.style.width = `${horizontalPaddleWidth}px`;
-            paddleBottom.style.height = `${horizontalPaddleHeight}px`;
-            paddleBottom.style.left = `${(gameWidth - horizontalPaddleWidth) / 2}px`;
-            paddleBottom.style.bottom = '20px';
-            paddleBottom.style.top = 'auto';
-            
-            // Position ball
-            ball.style.width = `${ballSize}px`;
-            ball.style.height = `${ballSize}px`;
-            resetBall();
-            
-            // Adjust for mobile
-            if (window.innerWidth < 768) {
-                paddleHeight = 80;
-                paddleWidth = 12;
-                horizontalPaddleWidth = 80;
-                horizontalPaddleHeight = 12;
-                
-                paddleLeft.style.width = `${paddleWidth}px`;
-                paddleLeft.style.height = `${paddleHeight}px`;
-                paddleRight.style.width = `${paddleWidth}px`;
-                paddleRight.style.height = `${paddleHeight}px`;
-                paddleTop.style.width = `${horizontalPaddleWidth}px`;
-                paddleTop.style.height = `${horizontalPaddleHeight}px`;
-                paddleBottom.style.width = `${horizontalPaddleWidth}px`;
-                paddleBottom.style.height = `${horizontalPaddleHeight}px`;
-            }
-        }
-        
-        // Reset ball to center
-        function resetBall() {
-            ball.style.left = `${(gameWidth - ballSize) / 2}px`;
-            ball.style.top = `${(gameHeight - ballSize) / 2}px`;
-            
-            // Random initial direction
-            ballSpeedX = (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 3 + 3);
-            ballSpeedY = (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 3 + 3);
-            
-            // Add launch delay
-            setTimeout(() => {
-                if (gameRunning && !gamePaused) {
-                    requestAnimationFrame(gameLoop);
-                }
-            }, 1000);
-        }
-        
-        // Create explosion particles
-        function createExplosion(x, y, color, count = 15) {
-            for (let i = 0; i < count; i++) {
-                const particle = document.createElement('div');
-                particle.classList.add('particle');
-                
-                const size = Math.random() * 8 + 2;
-                const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * 5 + 1;
-                const lifetime = Math.random() * 1000 + 500;
-                
-                particle.style.width = `${size}px`;
-                particle.style.height = `${size}px`;
-                particle.style.background = `radial-gradient(circle, ${color} 0%, rgba(255, 255, 255, 0) 70%)`;
-                particle.style.left = `${x}px`;
-                particle.style.top = `${y}px`;
-                
-                gameContainer.appendChild(particle);
-                
-                const startTime = performance.now();
-                
-                function animateParticle(currentTime) {
-                    if (!gameContainer.contains(particle)) return;
-                    
-                    const elapsed = currentTime - startTime;
-                    const progress = Math.min(elapsed / lifetime, 1);
-                    
-                    const distance = speed * elapsed / 10;
-                    const newX = x + Math.cos(angle) * distance;
-                    const newY = y + Math.sin(angle) * distance;
-                    
-                    particle.style.left = `${newX}px`;
-                    particle.style.top = `${newY}px`;
-                    particle.style.opacity = 1 - progress;
-                    
-                    if (progress < 1) {
-                        requestAnimationFrame(animateParticle);
-                    } else {
-                        if (gameContainer.contains(particle)) {
-                            gameContainer.removeChild(particle);
-                        }
-                    }
-                }
-                
-                requestAnimationFrame(animateParticle);
-            }
-        }
-        
-        // Check collisions
-        function checkCollisions() {
-            const ballRect = ball.getBoundingClientRect();
-            const paddleLeftRect = paddleLeft.getBoundingClientRect();
-            const paddleRightRect = paddleRight.getBoundingClientRect();
-            const paddleTopRect = paddleTop.getBoundingClientRect();
-            const paddleBottomRect = paddleBottom.getBoundingClientRect();
-            
-            // Wall collisions (now score zones)
-            if (parseFloat(ball.style.top) <= 0) {
-                // Blue team scores (top)
-                scores.blue++;
-                blueScore.textContent = scores.blue;
-                createExplosion(
-                    ballRect.left + ballSize / 2,
-                    ballRect.top,
-                    '#00f3ff',
-                    30
-                );
-                resetBall();
-                logToConsole("Blue team scores at top boundary!");
-                return;
-            }
-            
-            if (parseFloat(ball.style.top) >= gameHeight - ballSize) {
-                // Blue team scores (bottom)
-                scores.blue++;
-                blueScore.textContent = scores.blue;
-                createExplosion(
-                    ballRect.left + ballSize / 2,
-                    ballRect.bottom,
-                    '#00f3ff',
-                    30
-                );
-                resetBall();
-                logToConsole("Blue team scores at bottom boundary!");
-                return;
-            }
-            
-            if (parseFloat(ball.style.left) <= 0) {
-                // Pink team scores (left)
-                scores.pink++;
-                pinkScore.textContent = scores.pink;
-                createExplosion(
-                    ballRect.left,
-                    ballRect.top + ballSize / 2,
-                    '#ff00ff',
-                    30
-                );
-                resetBall();
-                logToConsole("Pink team scores at left boundary!");
-                return;
-            }
-            
-            if (parseFloat(ball.style.left) >= gameWidth - ballSize) {
-                // Pink team scores (right)
-                scores.pink++;
-                pinkScore.textContent = scores.pink;
-                createExplosion(
-                    ballRect.right,
-                    ballRect.top + ballSize / 2,
-                    '#ff00ff',
-                    30
-                );
-                resetBall();
-                logToConsole("Pink team scores at right boundary!");
-                return;
-            }
-            
-            // Paddle collisions
-            let hitPaddle = false;
-            let paddleColor;
-            
-            // Check vertical paddles (left and right)
-            if (ballSpeedX < 0 && ballRect.left <= paddleLeftRect.right && ballRect.right >= paddleLeftRect.left &&
-                ballRect.top <= paddleLeftRect.bottom && ballRect.bottom >= paddleLeftRect.top) {
-                hitPaddle = true;
-                paddleColor = '#00f3ff';
-                
-                // Calculate bounce angle for vertical paddles
-                const relativeIntersectY = (paddleLeftRect.top + (paddleHeight / 2)) - (ballRect.top + (ballSize / 2));
-                const normalizedRelativeIntersectionY = (relativeIntersectY / (paddleHeight / 2));
-                const bounceAngle = normalizedRelativeIntersectionY * maxAngle;
-                
-                ballSpeedX = Math.abs(ballSpeedX) * Math.cos(bounceAngle) * 1.05;
-                ballSpeedY = -Math.sin(bounceAngle) * Math.abs(ballSpeedX) * 1.5;
-            } 
-            else if (ballSpeedX > 0 && ballRect.left <= paddleRightRect.right && ballRect.right >= paddleRightRect.left &&
-                      ballRect.top <= paddleRightRect.bottom && ballRect.bottom >= paddleRightRect.top) {
-                hitPaddle = true;
-                paddleColor = '#00f3ff';
-                
-                // Calculate bounce angle for vertical paddles
-                const relativeIntersectY = (paddleRightRect.top + (paddleHeight / 2)) - (ballRect.top + (ballSize / 2));
-                const normalizedRelativeIntersectionY = (relativeIntersectY / (paddleHeight / 2));
-                const bounceAngle = normalizedRelativeIntersectionY * maxAngle;
-                
-                ballSpeedX = -Math.abs(ballSpeedX) * Math.cos(bounceAngle) * 1.05;
-                ballSpeedY = -Math.sin(bounceAngle) * Math.abs(ballSpeedX) * 1.5;
-            }
-            
-            // Check horizontal paddles (top and bottom)
-            if (ballSpeedY < 0 && ballRect.top <= paddleTopRect.bottom && ballRect.bottom >= paddleTopRect.top &&
-                ballRect.left <= paddleTopRect.right && ballRect.right >= paddleTopRect.left) {
-                hitPaddle = true;
-                paddleColor = '#ff00ff';
-                
-                // Calculate bounce angle for horizontal paddles
-                const relativeIntersectX = (paddleTopRect.left + (horizontalPaddleWidth / 2)) - (ballRect.left + (ballSize / 2));
-                const normalizedRelativeIntersectionX = (relativeIntersectX / (horizontalPaddleWidth / 2));
-                const bounceAngle = normalizedRelativeIntersectionX * maxAngle;
-                
-                ballSpeedX = -Math.sin(bounceAngle) * Math.abs(ballSpeedY) * 1.5;
-                ballSpeedY = Math.abs(ballSpeedY) * Math.cos(bounceAngle) * 1.05;
-            }
-            else if (ballSpeedY > 0 && ballRect.top <= paddleBottomRect.bottom && ballRect.bottom >= paddleBottomRect.top &&
-                      ballRect.left <= paddleBottomRect.right && ballRect.right >= paddleBottomRect.left) {
-                hitPaddle = true;
-                paddleColor = '#ff00ff';
-                
-                // Calculate bounce angle for horizontal paddles
-                const relativeIntersectX = (paddleBottomRect.left + (horizontalPaddleWidth / 2)) - (ballRect.left + (ballSize / 2));
-                const normalizedRelativeIntersectionX = (relativeIntersectX / (horizontalPaddleWidth / 2));
-                const bounceAngle = normalizedRelativeIntersectionX * maxAngle;
-                
-                ballSpeedX = -Math.sin(bounceAngle) * Math.abs(ballSpeedY) * 1.5;
-                ballSpeedY = -Math.abs(ballSpeedY) * Math.cos(bounceAngle) * 1.05;
-            }
-            
-            if (hitPaddle) {
-                // Create explosion effect
-                const explosionX = ballRect.left + ballSize / 2;
-                const explosionY = ballRect.top + ballSize / 2;
-                createExplosion(explosionX, explosionY, paddleColor, 20);
-                
-                // Add screen shake on hard hits
-                if (Math.abs(ballSpeedX) > 8 || Math.abs(ballSpeedY) > 8) {
-                    gameContainer.style.transform = `translate(${Math.random() * 8 - 4}px, ${Math.random() * 8 - 4}px)`;
-                    setTimeout(() => {
-                        gameContainer.style.transform = 'translate(0, 0)';
-                    }, 50);
-                    
-                    // Larger explosion for hard hits
-                    createExplosion(explosionX, explosionY, paddleColor, 40);
-                    logToConsole("Powerful impact detected!");
-                } else {
-                    logToConsole("Ball deflected!");
-                }
-            }
-        }
-        
-        // Update game state
-        function update() {
-            // Move ball
-            ball.style.left = `${parseFloat(ball.style.left) + ballSpeedX}px`;
-            ball.style.top = `${parseFloat(ball.style.top) + ballSpeedY}px`;
-            
-            // Check collisions
-            checkCollisions();
-        }
-        
-        // Game loop
-        function gameLoop() {
-            if (!gameRunning || gamePaused) return;
-            
-            update();
-            animateId = requestAnimationFrame(gameLoop);
-        }
-        
-        // Handle keyboard input
-        const keys = {
-            // Team Blue controls (vertical paddles)
-            w: false,    // Left paddle up
-            s: false,    // Left paddle down
-            ArrowUp: false,   // Right paddle up
-            ArrowDown: false, // Right paddle down
-            
-            // Team Pink controls (horizontal paddles)
-            a: false,    // Top paddle left
-            d: false,    // Top paddle right
-            ArrowLeft: false,  // Bottom paddle left
-            ArrowRight: false  // Bottom paddle right
-        };
-        
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'w' || e.key === 'W') keys.w = true;
-            if (e.key === 's' || e.key === 'S') keys.s = true;
-            if (e.key === 'a' || e.key === 'A') keys.a = true;
-            if (e.key === 'd' || e.key === 'D') keys.d = true;
-            if (e.key === 'ArrowUp') keys.ArrowUp = true;
-            if (e.key === 'ArrowDown') keys.ArrowDown = true;
-            if (e.key === 'ArrowLeft') keys.ArrowLeft = true;
-            if (e.key === 'ArrowRight') keys.ArrowRight = true;
-            
-            // Pause game with space
-            if (e.key === ' ' && gameRunning) {
-                togglePause();
-            }
-        });
-        
-        document.addEventListener('keyup', (e) => {
-            if (e.key === 'w' || e.key === 'W') keys.w = false;
-            if (e.key === 's' || e.key === 'S') keys.s = false;
-            if (e.key === 'a' || e.key === 'A') keys.a = false;
-            if (e.key === 'd' || e.key === 'D') keys.d = false;
-            if (e.key === 'ArrowUp') keys.ArrowUp = false;
-            if (e.key === 'ArrowDown') keys.ArrowDown = false;
-            if (e.key === 'ArrowLeft') keys.ArrowLeft = false;
-            if (e.key === 'ArrowRight') keys.ArrowRight = false;
-        });
-        
-        // Handle paddle movement
-        function handlePaddleMovement() {
-            // Team Blue vertical paddles (left and right)
-            const paddleLeftTop = parseFloat(paddleLeft.style.top);
-            const paddleRightTop = parseFloat(paddleRight.style.top);
-            
-            if (keys.w && paddleLeftTop > 0) {
-                paddleLeft.style.top = `${paddleLeftTop - paddleSpeed}px`;
-            }
-            if (keys.s && paddleLeftTop < gameHeight - paddleHeight) {
-                paddleLeft.style.top = `${paddleLeftTop + paddleSpeed}px`;
-            }
-            if (keys.ArrowUp && paddleRightTop > 0) {
-                paddleRight.style.top = `${paddleRightTop - paddleSpeed}px`;
-            }
-            if (keys.ArrowDown && paddleRightTop < gameHeight - paddleHeight) {
-                paddleRight.style.top = `${paddleRightTop + paddleSpeed}px`;
-            }
-            
-            // Team Pink horizontal paddles (top and bottom)
-            const paddleTopLeft = parseFloat(paddleTop.style.left);
-            const paddleBottomLeft = parseFloat(paddleBottom.style.left);
-            
-            if (keys.a && paddleTopLeft > 0) {
-                paddleTop.style.left = `${paddleTopLeft - paddleSpeed}px`;
-            }
-            if (keys.d && paddleTopLeft < gameWidth - horizontalPaddleWidth) {
-                paddleTop.style.left = `${paddleTopLeft + paddleSpeed}px`;
-            }
-            if (keys.ArrowLeft && paddleBottomLeft > 0) {
-                paddleBottom.style.left = `${paddleBottomLeft - paddleSpeed}px`;
-            }
-            if (keys.ArrowRight && paddleBottomLeft < gameWidth - horizontalPaddleWidth) {
-                paddleBottom.style.left = `${paddleBottomLeft + paddleSpeed}px`;
-            }
-        }
-        
-        // Log messages to console
-        function logToConsole(message) {
-            consoleElement.textContent = `> ${message}`;
-        }
-        
-        // Start game
-        function startGame() {
-            startScreen.style.display = 'none';
-            gameRunning = true;
-            scores.blue = 0;
-            scores.pink = 0;
-            blueScore.textContent = '0';
-            pinkScore.textContent = '0';
-            initGameDimensions();
-            logToConsole("Cybernetic interface engaged. Commencing 2v2 battle!");
-            gameLoop();
-        }
-        
-        // Pause game
-        function togglePause() {
-            gamePaused = !gamePaused;
-            
-            if (gamePaused) {
-                pauseScreen.style.display = 'flex';
-                cancelAnimationFrame(animateId);
-                logToConsole("Game paused. Systems in standby");
-            } else {
-                pauseScreen.style.display = 'none';
-                gameLoop();
-                logToConsole("Game resumed. Systems active");
-            }
-        }
-        
-        function resumeGame() {
-            togglePause();
-        }
-        
-        // Reset game
-        function resetGame() {
-            gameRunning = false;
-            gamePaused = false;
-            cancelAnimationFrame(animateId);
-            pauseScreen.style.display = 'none';
-            startScreen.style.display = 'flex';
-            logToConsole("System reset. Ready for new game");
-        }
-        
-        // Main loop for paddle movement
-        function mainLoop() {
-            if (gameRunning && !gamePaused) {
-                handlePaddleMovement();
-            }
-            requestAnimationFrame(mainLoop);
-        }
-        
-        // Initialize game
-        window.addEventListener('load', () => {
-            initGameDimensions();
-            mainLoop();
-            logToConsole("System initialized. Awaiting player command");
-            
-            // Handle window resize
-            window.addEventListener('resize', () => {
-                initGameDimensions();
-            });
-        });
-    </script>
-<p style="border-radius: 8px; text-align: center; font-size: 12px; color: #fff; margin-top: 16px;position: fixed; left: 8px; bottom: 8px; z-index: 10; background: rgba(0, 0, 0, 0.8); padding: 4px 8px;">Made with <img src="https://enzostvs-deepsite.hf.space/logo.svg" alt="DeepSite Logo" style="width: 16px; height: 16px; vertical-align: middle;display:inline-block;margin-right:3px;filter:brightness(0) invert(1);"><a href="https://enzostvs-deepsite.hf.space" style="color: #fff;text-decoration: underline;" target="_blank" >DeepSite</a> - <a href="https://enzostvs-deepsite.hf.space?remix=ahmedmohammedahmed20/cyberpong" style="color: #fff;text-decoration: underline;" target="_blank" >🧬 Remix</a></p></body>
+</section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 ATJ Services. Tous droits réservés.</p>
+    </footer>
+</body>
 </html>
